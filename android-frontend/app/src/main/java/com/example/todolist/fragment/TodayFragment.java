@@ -6,15 +6,19 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.todolist.R;
 import com.example.todolist.Utils.DateTimeUtils;
+import com.example.todolist.activities.MainActivity;
+import com.example.todolist.adapter.CalendarAdapter;
 import com.example.todolist.adapter.TaskAdapter;
 import com.example.todolist.databinding.FragmentTodayBinding;
 import com.example.todolist.model.Tag;
@@ -23,15 +27,22 @@ import com.example.todolist.model.TaskLog;
 
 import com.example.todolist.Utils.DateTimeUtils.*;
 
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.YearMonth;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-public class TodayFragment extends Fragment {
+public class TodayFragment extends Fragment implements CalendarAdapter.OnItemListener {
     private FragmentTodayBinding binding;
     private RecyclerView recyclerViewToday;
+    private RecyclerView recyclerViewCalendar;
     private TextView textTodayTitle;
     private TaskAdapter taskAdapter;
+    private LocalDate selectedDate;
     private List<TaskLog> taskLogsToday = new ArrayList<>();
     public TodayFragment(){}
 //
@@ -42,15 +53,17 @@ public class TodayFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
-        binding = FragmentTodayBinding.inflate(getLayoutInflater());
-
-        setupRecyclerView();
+        binding = FragmentTodayBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState){
         super.onViewCreated(view, savedInstanceState);
+
+        initCalendar();
+        setWeekView();
+        setupRecyclerView();
         loadTaskToday();
     }
 
@@ -101,5 +114,71 @@ public class TodayFragment extends Fragment {
         taskAdapter.updateData(list);
         taskAdapter.updateTags(tagList);
         taskAdapter.updateLogs(taskLogsToday);
+    }
+
+    private void initCalendar(){
+        selectedDate = LocalDate.now();
+        recyclerViewCalendar = binding.calendarRecyclerView;
+    }
+
+    private void setWeekView(){
+        ArrayList<LocalDate> daysInWeek = daysInWeekArray(selectedDate);
+
+        CalendarAdapter calendarAdapter = new CalendarAdapter(daysInWeek, this);
+        RecyclerView.LayoutManager layoutManager = new GridLayoutManager(getActivity(), 7);
+        recyclerViewCalendar.setLayoutManager(layoutManager);
+        recyclerViewCalendar.setAdapter(calendarAdapter);
+    }
+
+    private ArrayList<LocalDate> daysInWeekArray(LocalDate date) {
+        ArrayList<LocalDate> daysInWeekArray = new ArrayList<>();
+
+        // Lấy ngày đầu tuần (Chủ nhật)
+        LocalDate current = date.with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY));
+
+        for (int i = 0; i < 7; i++) {
+            daysInWeekArray.add(current.plusDays(i));
+        }
+
+        return daysInWeekArray;
+    }
+
+    private ArrayList<String> daysInMonthArray(LocalDate date)
+    {
+        ArrayList<String> daysInMonthArray = new ArrayList<>();
+        YearMonth yearMonth = YearMonth.from(date);
+
+        int daysInMonth = yearMonth.lengthOfMonth();
+
+        LocalDate firstOfMonth = selectedDate.withDayOfMonth(1);
+        int dayOfWeek = firstOfMonth.getDayOfWeek().getValue() % 7;
+
+        for(int i = 1; i <= 42; i++)
+        {
+            if(i <= dayOfWeek || i > daysInMonth + dayOfWeek)
+            {
+                daysInMonthArray.add("");
+            }
+            else
+            {
+                daysInMonthArray.add(String.valueOf(i - dayOfWeek));
+            }
+        }
+        return  daysInMonthArray;
+    }
+
+    private String monthYearFromDate(LocalDate date)
+    {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMMM yyyy");
+        return date.format(formatter);
+    }
+
+    @Override
+    public void onItemClick(int position, String dayText)
+    {
+        if(!dayText.equals(""))
+        {
+            String message = "Selected Date " + dayText + " " + monthYearFromDate(selectedDate);
+        }
     }
 }

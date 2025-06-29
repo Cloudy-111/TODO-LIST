@@ -8,4 +8,5 @@
     <color name="active_icon">#6074F9</color>
     <color name="inactive_icon">#B0B0B0</color>
     <color name="teal_200">#03DAC5</color>
+    <color name="gray">#5E5E5E</color>
 </resources>
