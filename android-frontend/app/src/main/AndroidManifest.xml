@@ -20,6 +20,10 @@
             android:exported="false"/>
         <activity android:name=".activities.SignupActivity"
             android:exported="false"/>
+        <activity android:name=".activities.AddTaskActivity"
+            android:exported="false"/>
+        <activity android:name=".activities.TaskDetailActivity"
+            android:exported="false"/>
         <activity
             android:name=".activities.MainActivity"
             android:exported="true">

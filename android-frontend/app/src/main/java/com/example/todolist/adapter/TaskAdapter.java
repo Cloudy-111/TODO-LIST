@@ -20,9 +20,11 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.example.todolist.R;
 import com.example.todolist.Utils.ChangeColorUtils;
+import com.example.todolist.Utils.DateTimeUtils;
 import com.example.todolist.model.Tag;
 import com.example.todolist.model.TaskItem;
 import com.example.todolist.model.TaskLog;
+import com.example.todolist.viewHolder.TaskViewHolder;
 import com.google.android.material.checkbox.MaterialCheckBox;
 import com.google.android.material.imageview.ShapeableImageView;
 
@@ -31,21 +33,29 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder> {
+public class TaskAdapter extends RecyclerView.Adapter<TaskViewHolder> {
     private List<TaskItem> taskList;
     private List<Tag> tagList;
     private List<TaskLog> taskLogsToday;
     private OnCheckTaskListener checkTaskListener;
+    private OnClickItemTask itemListener;
+    private Context context;
 
     public interface OnCheckTaskListener{
         void onTaskChecked(TaskItem task, boolean isChecked);
     }
 
-    public TaskAdapter(List<TaskItem> taskList, List<Tag> tagList, List<TaskLog> taskLogsToday, OnCheckTaskListener listener){
+    public interface OnClickItemTask{
+        void onItemTaskClicked(TaskItem taskItem);
+    }
+
+    public TaskAdapter(List<TaskItem> taskList, List<Tag> tagList, List<TaskLog> taskLogsToday, Context context, OnCheckTaskListener listener, OnClickItemTask itemListener){
         this.tagList = tagList;
         this.taskList = taskList;
         this.taskLogsToday = taskLogsToday;
         this.checkTaskListener = listener;
+        this.itemListener = itemListener;
+        this.context = context;
     }
 
     @NonNull
@@ -92,7 +102,7 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
 
         boolean isChecked = false;
         for(TaskLog log : taskLogsToday){
-            if(log.getTaskId() == item.getId()){
+            if(log.getTaskId() == item.getId() && log.getCompletedAt().equals(DateTimeUtils.getTodayDate())){
                 isChecked = true;
                 break;
             }
@@ -138,6 +148,13 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
                 }
             }
         }));
+
+        holder.infoTask.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                itemListener.onItemTaskClicked(item);
+            }
+        });
     }
 
     @Override
@@ -145,20 +162,8 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
         return taskList.size();
     }
 
-    static class TaskViewHolder extends RecyclerView.ViewHolder{
-        ShapeableImageView imageTask;
-        TextView nameTask, timeTask;
-        MaterialCheckBox checkBox;
-        View colorBar;
-
-        public TaskViewHolder(@NonNull View itemView){
-            super(itemView);
-            imageTask = itemView.findViewById(R.id.image_task);
-            nameTask = itemView.findViewById(R.id.name_task);
-            timeTask = itemView.findViewById(R.id.time_task);
-            checkBox = itemView.findViewById(R.id.check_task);
-            colorBar = itemView.findViewById(R.id.color_bar);
-        }
+    public void setOnClick(OnClickItemTask onClick){
+        this.itemListener = onClick;
     }
 
     public void updateData(List<TaskItem> listTaskItem){

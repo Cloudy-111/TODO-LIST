@@ -30,7 +30,8 @@
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:orientation="vertical"
-            android:layout_weight="0.8">
+            android:layout_weight="0.8"
+            android:id="@+id/info_task">
 
             <TextView
                 android:id="@+id/name_task"

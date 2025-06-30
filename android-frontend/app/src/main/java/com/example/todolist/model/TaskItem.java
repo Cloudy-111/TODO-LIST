@@ -1,9 +1,8 @@
 package com.example.todolist.model;
 
-import java.util.Date;
-
 public class TaskItem {
     private int id;
+    private int userId;
     private String name;
     private String description;
     private String due_time;
@@ -11,6 +10,17 @@ public class TaskItem {
     private int tagId;
     private String startDate;
     private String endDate;
+
+    public TaskItem(int userId, String name, String description, String due_time, String image_task, int tagId, String startDate, String endDate) {
+        this.userId = userId;
+        this.name = name;
+        this.description = description;
+        this.due_time = due_time;
+        this.image_task = image_task;
+        this.tagId = tagId;
+        this.startDate = startDate;
+        this.endDate = endDate;
+    }
 
     public TaskItem(int id, String name, String description, String due_time, String image_task) {
         this.id = id;
@@ -29,6 +39,18 @@ public class TaskItem {
         this.tagId = tagId;
         this.startDate = startDate;
         this.endDate = endDate;
+    }
+
+    public int getUserId() {
+        return userId;
+    }
+
+    public void setUserId(int userId) {
+        this.userId = userId;
+    }
+
+    public TaskItem() {
+
     }
 
     public String getStartDate() {
