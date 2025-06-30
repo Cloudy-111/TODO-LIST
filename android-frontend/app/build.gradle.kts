@@ -46,6 +46,10 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
-    implementation("com.google.android.material:material:1.11.0")
+    implementation("com.google.android.material:material:1.12.0")
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    implementation("androidx.coordinatorlayout:coordinatorlayout:1.3.0")
+    implementation("com.github.bumptech.glide:glide:4.16.0")
+    implementation("com.apachat:swipereveallayout-android:1.1.2")
+    annotationProcessor("com.github.bumptech.glide:compiler:4.16.0")
 }

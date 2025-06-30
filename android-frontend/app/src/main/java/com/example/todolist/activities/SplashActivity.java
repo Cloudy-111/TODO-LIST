@@ -1,4 +1,4 @@
-package com.example.todolist;
+package com.example.todolist.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -6,7 +6,6 @@ import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.todolist.databinding.ActivityLoginBinding;
 import com.example.todolist.databinding.ActivitySplashBinding;
 
 public class SplashActivity extends AppCompatActivity {

@@ -5,4 +5,22 @@
     <color name="primary">#F96060</color>
     <color name="secondary">#6074F9</color>
     <color name="tertiary">#313131</color>
+    <color name="active_icon">#6074F9</color>
+    <color name="inactive_icon">#B0B0B0</color>
+    <color name="teal_200">#03DAC5</color>
+    <color name="gray">#555555</color>
+
+    <color name="background_light">#F5F5F5</color>
+    <color name="primary_color">#3F51B5</color>
+    <color name="gray_600">#757575</color>
+    <color name="green_600">#4CAF50</color>
+    <color name="red_500">#F44336</color>
+
+    <color name="job_red_primary">#F44336</color>
+    <color name="job_red_dark">#E62E21</color>
+    <color name="job_delete_button_bg">#FFF8E1</color>
+    <color name="job_delete_button_stroke">#F44336</color>
+    <color name="job_separator_line">#E8F5E9</color>
+    <color name="job_text_primary">#212121</color>
+    <color name="job_notes_border">#BDBDBD</color>
 </resources>
