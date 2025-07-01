@@ -12,6 +12,8 @@ import com.example.todolist.repository.TaskLogRepository;
 import com.example.todolist.repository.TaskRepository;
 
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class TaskDayViewModel extends ViewModel {
     private final TaskRepository taskRepository = new TaskRepository();
@@ -26,11 +28,14 @@ public class TaskDayViewModel extends ViewModel {
 
     private final MutableLiveData<List<TaskLog>> _logs = new MutableLiveData<>();
     public LiveData<List<TaskLog>> logs = _logs;
+    private ExecutorService executor = Executors.newSingleThreadExecutor();
 
-    public void loadData() {
-        _tasks.setValue(taskRepository.getAllTasks());
-        _tags.setValue(tagRepository.getAllTags());
-        _logs.setValue(taskLogRepository.getAllTaskLogs());
+    public void loadData(String day, int userId){
+        executor.execute(() -> {
+            _tasks.postValue(taskRepository.getAllTask(day, userId));
+            _tags.postValue(tagRepository.getAllTags());
+            _logs.postValue(taskLogRepository.getAllTaskLogs());
+        });
     }
 
     public void updateLogs(List<TaskLog> newLogs) {

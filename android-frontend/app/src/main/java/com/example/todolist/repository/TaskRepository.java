@@ -1,17 +1,23 @@
 package com.example.todolist.repository;
 
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 
 import com.example.todolist.fake.fakeDB;
 import com.example.todolist.model.TaskItem;
 
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import okhttp3.Call;
 import okhttp3.Callback;
+import okhttp3.HttpUrl;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -20,21 +26,85 @@ import okhttp3.Response;
 
 public class TaskRepository {
     private final OkHttpClient client = new OkHttpClient();
+    private final String baseURL = "http://192.168.10.105:5000";
 
     public interface AddTaskCallback{
         void onSuccess(int userId);
         void onError(String errorMessage);
     }
 
-    public List<TaskItem> getAllTasks() {
-        return fakeDB.getAllTask();
+    public List<TaskItem> getAllTask(String day, int userId) {
+//        String baseURL = "http://10.0.2.2:5000";
+        HttpUrl.Builder urlBuilder = HttpUrl.parse(baseURL + "/task/get/" + day + "/" + userId).newBuilder();
+        String url = urlBuilder.toString();
+
+        List<TaskItem> result = new ArrayList<>();
+        Request request = new Request.Builder()
+                .url(url)
+                .build();
+
+        try {
+            Response response = client.newCall(request).execute();
+            if (response.isSuccessful()) {
+                String resStr = response.body().string();
+                JSONArray resJSON = new JSONArray(resStr);
+                for (int i = 0; i < resJSON.length(); i++) {
+                    JSONObject objects = resJSON.getJSONObject(i);
+                    TaskItem item = new TaskItem(
+                            objects.getInt("id"),
+                            objects.getInt("user_id"),
+                            objects.getString("name"),
+                            objects.getString("description"),
+                            objects.getString("create_at"),
+                            objects.getString("end_at"),
+                            objects.getString("due_time"),
+                            objects.getString("image"),
+                            objects.getInt("tag_id")
+                    );
+                    result.add(item);
+                }
+            }
+        } catch (IOException | JSONException e) {
+            e.printStackTrace();
+        }
+
+        return result;
     }
 
-    public TaskItem getTaskById(int taskId) {
-        return fakeDB.getTaskItem(taskId);
+    public TaskItem getTaskById(int taskId){
+//        String baseURL = "http://10.0.2.2:5000";
+        HttpUrl.Builder urlBuilder = HttpUrl.parse(baseURL + "/task/get/" + String.valueOf(taskId)).newBuilder();
+
+        String url = urlBuilder.toString();
+
+        TaskItem result = new TaskItem(0, 0, "", "", "", "", "" ,"", 1);
+        Request request = new Request.Builder()
+                .url(url)
+                .build();
+
+        try {
+            Response response = client.newCall(request).execute();
+            if (response.isSuccessful()) {
+                String resStr = response.body().string();
+                JSONObject resJSON = new JSONObject(resStr);
+                result.setId(resJSON.getInt("id"));
+                result.setUserId(resJSON.getInt("user_id"));
+                result.setName(resJSON.getString("name"));
+                result.setDescription(resJSON.getString("description"));
+                result.setStartDate(resJSON.getString("create_at"));
+                result.setEndDate(resJSON.getString("end_at"));
+                result.setDue_time(resJSON.getString("due_time"));
+                result.setImage_task(resJSON.getString("image"));
+                result.setTagId(resJSON.getInt("id"));
+            }
+        } catch (IOException | JSONException e){
+            e.printStackTrace();
+        }
+        return result;
     }
 
     public void saveNewTask(TaskItem item, AddTaskCallback callback){
+        String url = baseURL + "/task/add/";
         JSONObject json = new JSONObject();
         try {
             json.put("name", item.getName());
@@ -53,7 +123,7 @@ public class TaskRepository {
 
         RequestBody body = RequestBody.create(json.toString(), MediaType.parse("application/json"));
         Request request = new Request.Builder()
-                .url("http://107.98.86.164:5000/task/add/")
+                .url(url)
                 .post(body)
                 .build();
 

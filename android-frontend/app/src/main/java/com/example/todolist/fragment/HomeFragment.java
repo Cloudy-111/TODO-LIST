@@ -1,5 +1,8 @@
 package com.example.todolist.fragment;
 
+import static android.content.Context.MODE_PRIVATE;
+
+import android.content.SharedPreferences;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.util.Log;
@@ -24,11 +27,14 @@ public class HomeFragment extends Fragment {
     private FragmentHomeBinding binding;
     private ViewPager2 viewPager;
     public TextView tabToday, tabMonth;
+    private SharedPreferences preferences;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         binding = FragmentHomeBinding.inflate(inflater, container, false);
+        preferences = getActivity().getSharedPreferences("MyAppPrefs", MODE_PRIVATE);
+        int userId = preferences.getInt("user_id", 0);
         return binding.getRoot();
     }
 

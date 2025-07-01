@@ -1,6 +1,7 @@
 package com.example.todolist.activities;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 
 import androidx.activity.EdgeToEdge;
@@ -35,14 +36,22 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 public class MainActivity extends AppCompatActivity {
 
     private ActivityMainBinding binding;
+    private SharedPreferences preferences ;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        preferences = getSharedPreferences("MyAppPrefs", MODE_PRIVATE);
 
-        replaceFragment(new HomeFragment());
+        int userId = preferences.getInt("user_id", 0);
+
+        HomeFragment homeFragment = new HomeFragment();
+        ProfileFragment profileFragment = new ProfileFragment();
+
+        replaceFragment(homeFragment);
         binding.bottomNavigationView.setBackground(null);
 
         binding.bottomNavigationView.setOnItemSelectedListener(item -> {

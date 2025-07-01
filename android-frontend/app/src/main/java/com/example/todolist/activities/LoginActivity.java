@@ -1,6 +1,7 @@
 package com.example.todolist.activities;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Toast;
@@ -18,14 +19,24 @@ import java.io.IOException;
 import okhttp3.*;
 
 public class LoginActivity extends AppCompatActivity{
+    public static int userIdCurrent;
     private ActivityLoginBinding binding;
     private final OkHttpClient client = new OkHttpClient();
+    private SharedPreferences preferences ;
 
     @Override
     protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
         binding = ActivityLoginBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+        preferences = getSharedPreferences("MyAppPrefs", MODE_PRIVATE);
+        int user_id = preferences.getInt("user_id", 0);
+        if(user_id != 0){
+            Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+            startActivity(intent);
+            finish();
+        }
 
         binding.signupNavigation.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -62,7 +73,7 @@ public class LoginActivity extends AppCompatActivity{
 
         RequestBody body = RequestBody.create(json.toString(), MediaType.parse("application/json"));
         Request request = new Request.Builder()
-                .url("http://107.98.86.164:5000/user/login")
+                .url("http://192.168.10.105:5000/user/login")
                 .post(body)
                 .header("Accept", "application/json")
                 .header("Content-Type", "application/json")
@@ -86,10 +97,9 @@ public class LoginActivity extends AppCompatActivity{
                         boolean success = resJSON.getBoolean("success");
 
                         if(success){
-                            int userId = resJSON.getInt("user_id");
+                            preferences.edit().putInt("user_id", resJSON.getInt("user_id")).apply();
                             runOnUiThread(() -> {
                                 Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                                intent.putExtra("user_id", userId);
                                 startActivity(intent);
                                 finish();
                             });
