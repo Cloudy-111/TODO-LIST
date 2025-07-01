@@ -30,8 +30,9 @@ public class TaskItem {
         this.image_task = image_task;
     }
 
-    public TaskItem(int id, String name, String description, String startDate, String endDate, String due_time, String image_task, int tagId) {
+    public TaskItem(int id, int userId, String name, String description, String startDate, String endDate, String due_time, String image_task, int tagId) {
         this.id = id;
+        this.userId = userId;
         this.name = name;
         this.description = description;
         this.due_time = due_time;

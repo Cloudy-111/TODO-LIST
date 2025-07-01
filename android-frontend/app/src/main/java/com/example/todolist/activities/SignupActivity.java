@@ -58,7 +58,7 @@ public class SignupActivity extends AppCompatActivity {
 
     public void signupUser(String username, String password){
         MediaType MEDIA_TYPE = MediaType.parse("application/json");
-        String url = "http://107.98.86.164:5000/user/register";
+        String url = "http://192.168.10.105:5000/user/register";
 
         JSONObject json = new JSONObject();
         try{

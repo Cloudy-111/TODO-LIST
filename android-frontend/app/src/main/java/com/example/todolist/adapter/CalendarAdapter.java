@@ -17,11 +17,11 @@ import java.util.ArrayList;
 public class CalendarAdapter extends RecyclerView.Adapter<CalendarViewHolder>{
     private final ArrayList<LocalDate> daysOfMonth;
     private final OnItemListener onItemListener;
-    private final LocalDate today;
-    public CalendarAdapter(ArrayList<LocalDate> daysOfMonth, OnItemListener onItemListener){
+    private final LocalDate selectedDate;
+    public CalendarAdapter(ArrayList<LocalDate> daysOfMonth, LocalDate selectedDate, OnItemListener onItemListener){
         this.daysOfMonth = daysOfMonth;
         this.onItemListener = onItemListener;
-        this.today = LocalDate.now();
+        this.selectedDate = selectedDate;
     }
 
     @NonNull
@@ -41,10 +41,17 @@ public class CalendarAdapter extends RecyclerView.Adapter<CalendarViewHolder>{
         int dayNumber = date.getDayOfMonth();
         holder.daysOfMonth.setText(String.valueOf(dayNumber));
 
+        LocalDate today = LocalDate.now();
         if (!date.isAfter(today)) {
             holder.daysOfMonth.setTextColor(Color.BLACK);
         } else {
             holder.daysOfMonth.setTextColor(Color.GRAY);
+        }
+        if (date.equals(selectedDate)) {
+            // highlight màu nền khác
+//            holder.itemView.setBackgroundResource(R.drawable.bg_selected_date);
+        } else {
+//            holder.itemView.setBackgroundResource(0);
         }
     }
 

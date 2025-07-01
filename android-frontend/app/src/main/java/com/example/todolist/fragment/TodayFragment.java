@@ -1,6 +1,7 @@
 package com.example.todolist.fragment;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -19,6 +20,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.todolist.R;
 import com.example.todolist.Utils.DateTimeUtils;
+import com.example.todolist.activities.LoginActivity;
 import com.example.todolist.activities.MainActivity;
 import com.example.todolist.activities.TaskDetailActivity;
 import com.example.todolist.adapter.CalendarAdapter;
@@ -48,7 +50,9 @@ public class TodayFragment extends Fragment implements CalendarAdapter.OnItemLis
     private TaskAdapter taskAdapter;
     private LocalDate selectedDate;
     private List<TaskLog> taskLogsToday = new ArrayList<>();
+    private ArrayList<LocalDate> daysInWeek;
     private TaskDayViewModel viewModel;
+    private SharedPreferences preferences;
     public TodayFragment(){}
 
     @Override
@@ -60,6 +64,8 @@ public class TodayFragment extends Fragment implements CalendarAdapter.OnItemLis
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState){
         super.onViewCreated(view, savedInstanceState);
+        preferences = getActivity().getSharedPreferences("MyAppPrefs", getContext().MODE_PRIVATE);
+        int user_id = preferences.getInt("user_id", 0);
         viewModel = new ViewModelProvider(this).get(TaskDayViewModel.class);
 
         observeData();
@@ -67,7 +73,7 @@ public class TodayFragment extends Fragment implements CalendarAdapter.OnItemLis
         setWeekView();
         setupRecyclerView();
 
-        viewModel.loadData();
+        viewModel.loadData(DateTimeUtils.getTodayDate(), user_id);
     }
 
     private void setupRecyclerView(){
@@ -118,9 +124,9 @@ public class TodayFragment extends Fragment implements CalendarAdapter.OnItemLis
     }
 
     private void setWeekView(){
-        ArrayList<LocalDate> daysInWeek = daysInWeekArray(selectedDate);
+        daysInWeek = daysInWeekArray(selectedDate);
 
-        CalendarAdapter calendarAdapter = new CalendarAdapter(daysInWeek, this);
+        CalendarAdapter calendarAdapter = new CalendarAdapter(daysInWeek, selectedDate, this);
         RecyclerView.LayoutManager layoutManager = new GridLayoutManager(getActivity(), 7);
         recyclerViewCalendar.setLayoutManager(layoutManager);
         recyclerViewCalendar.setAdapter(calendarAdapter);
@@ -172,9 +178,13 @@ public class TodayFragment extends Fragment implements CalendarAdapter.OnItemLis
     @Override
     public void onItemClick(int position, String dayText)
     {
-        if(!dayText.equals(""))
-        {
-            String message = "Selected Date " + dayText + " " + monthYearFromDate(selectedDate);
+        if (!dayText.equals("")) {
+            selectedDate = daysInWeek.get(position);
+
+            int user_id = preferences.getInt("user_id", 0);
+
+            viewModel.loadData(selectedDate.toString(), user_id);
+            setWeekView();
         }
     }
 }

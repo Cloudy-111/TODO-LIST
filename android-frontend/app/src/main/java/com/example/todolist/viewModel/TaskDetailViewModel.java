@@ -11,6 +11,9 @@ import com.example.todolist.repository.TagRepository;
 import com.example.todolist.repository.TaskLogRepository;
 import com.example.todolist.repository.TaskRepository;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 public class TaskDetailViewModel extends ViewModel {
     private final TaskRepository taskRepository = new TaskRepository();
     private final TagRepository tagRepository = new TagRepository();
@@ -22,9 +25,12 @@ public class TaskDetailViewModel extends ViewModel {
     public LiveData<Tag> tag = _tag;
     private final MutableLiveData<TaskLog> _taskLog = new MutableLiveData<>();
     public LiveData<TaskLog> taskLog = _taskLog;
+    private ExecutorService executor = Executors.newSingleThreadExecutor();
 
     public void loadData(int taskId){
-        _task.setValue(taskRepository.getTaskById(taskId));
+        executor.execute(() -> {
+            _task.postValue(taskRepository.getTaskById(taskId));
+        });
 //        _tag.setValue(tagRepository.getTagByTaskId(taskId));
 //        _taskLog.setValue(taskLogRepository.getTaskLogByTaskId(taskId));
     }
