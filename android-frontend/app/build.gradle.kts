@@ -53,4 +53,5 @@ dependencies {
     implementation("com.apachat:swipereveallayout-android:1.1.2")
     annotationProcessor("com.github.bumptech.glide:compiler:4.16.0")
     implementation("com.github.QuadFlask:colorpicker:0.0.15")
+    implementation("com.google.android.gms:play-services-auth:20.7.0")
 }
