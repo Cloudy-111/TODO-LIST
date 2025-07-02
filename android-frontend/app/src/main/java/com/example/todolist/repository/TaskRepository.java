@@ -6,6 +6,7 @@ import androidx.annotation.NonNull;
 
 import com.example.todolist.fake.fakeDB;
 import com.example.todolist.model.TaskItem;
+import com.example.todolist.model.TaskLog;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -30,6 +31,11 @@ public class TaskRepository {
 
     public interface AddTaskCallback{
         void onSuccess(String successMessage, TaskItem taskItem);
+        void onError(String errorMessage);
+    }
+
+    public interface SaveTaskCallback{
+        void onSuccess(String successMessage);
         void onError(String errorMessage);
     }
 
@@ -147,6 +153,57 @@ public class TaskRepository {
                         String message = resJSON.getString("message");
                         if (success) {
                             callback.onSuccess(message, item);
+                        } else {
+                            callback.onError(resJSON.getString("message"));
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        callback.onError("Lỗi xử lý phản hồi: " + e.getMessage());
+                    }
+                } else {
+                    callback.onError("Lỗi từ máy chủ: " + response.code());
+                }
+            }
+        });
+    }
+
+    public void saveEditTask(TaskItem item, TaskLog log, SaveTaskCallback callback){
+        String url = baseURL + "/tasklog/updateNote/" + log.getId();
+        JSONObject json = new JSONObject();
+        try {
+            json.put("note", log.getNote());
+        } catch (Exception e){
+            e.printStackTrace();
+            callback.onError("Lỗi tạo JSON");
+            return;
+        }
+
+        RequestBody body = RequestBody.create(json.toString(), MediaType.parse("application/json"));
+        Request request = new Request.Builder()
+                .url(url)
+                .post(body)
+                .build();
+
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(@NonNull Call call, @NonNull IOException e) {
+                callback.onError("Không thể kết nối tới máy chủ");
+            }
+
+            @Override
+            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+                if (response.isSuccessful() && response.body() != null) {
+                    try {
+                        // Đọc nội dung JSON string
+                        String resStr = response.body().string();
+                        Log.d("HTTP_RESPONSE", "Raw response: " + resStr);
+
+                        // Parse JSON
+                        JSONObject resJSON = new JSONObject(resStr);
+                        boolean success = resJSON.getBoolean("success");
+                        String message = resJSON.getString("message");
+                        if (success) {
+                            callback.onSuccess(message);
                         } else {
                             callback.onError(resJSON.getString("message"));
                         }

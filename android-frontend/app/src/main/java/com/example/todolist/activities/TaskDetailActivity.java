@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.ViewCompat;
@@ -12,9 +13,11 @@ import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.example.todolist.R;
+import com.example.todolist.Utils.DateTimeUtils;
 import com.example.todolist.databinding.ActivityTaskDetailBinding;
 import com.example.todolist.fake.fakeDB;
 import com.example.todolist.model.TaskItem;
+import com.example.todolist.model.TaskLog;
 import com.example.todolist.repository.TaskRepository;
 import com.example.todolist.viewModel.TaskDetailViewModel;
 
@@ -26,6 +29,7 @@ import java.util.Date;
 public class TaskDetailActivity extends AppCompatActivity {
     private TaskDetailViewModel taskDetailViewModel;
     private TaskItem item;
+    private TaskLog log;
     private ActivityTaskDetailBinding binding;
 
     @Override
@@ -42,15 +46,28 @@ public class TaskDetailActivity extends AppCompatActivity {
                 binding.startDateTextView.setText(taskItem.getStartDate());
                 binding.endDateTextView.setText(taskItem.getEndDate());
                 binding.descriptionTextView.setText(taskItem.getDescription());
+//                binding.statusTextView.setText(log.getStatus() == true ? "Đã hoàn thành" : "Chưa hoàn thành");
             }
         };
 
         taskDetailViewModel.task.observe(this, itemObserver);
 
+        taskDetailViewModel.taskLog.observe(this, new Observer<TaskLog>() {
+            @Override
+            public void onChanged(TaskLog taskLog) {
+                log = taskLog;
+                // Nếu cần hiển thị trạng thái:
+                if (log != null) {
+                    binding.statusTextView.setText(log.getStatus() ? "Đã hoàn thành" : "Chưa hoàn thành");
+                    binding.taskNoteText.setText(log.getNote());
+                }
+            }
+        });
+
         //Retrieve Data
         Bundle bundle = getIntent().getExtras();
         int taskId = bundle.getInt("task_id");
-        taskDetailViewModel.loadData(taskId);
+        taskDetailViewModel.loadData(taskId, DateTimeUtils.getTodayDate());
 
         // Xử lý khoảng cách hệ thống
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
@@ -59,56 +76,28 @@ public class TaskDetailActivity extends AppCompatActivity {
             return insets;
         });
 
-        Button selectDateButton = findViewById(R.id.select_date_button);
-        TextView selectedDateTextView = findViewById(R.id.selected_date_text_view);
-
-        // Xử lý sự kiện khi nhấn nút "Chọn ngày"
-        selectDateButton.setOnClickListener(v -> {
-            // Lấy ngày bắt đầu và ngày kết thúc
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-mm-dd");
-            Date startDate = null;
-            Date endDate = null;
-            try {
-                startDate = sdf.parse(item.getStartDate());
-                endDate = sdf.parse(item.getEndDate());
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
-            if (startDate != null && endDate != null) {
-                ArrayList<String> dateList = new ArrayList<>();
-                Calendar calendar = Calendar.getInstance();
-                calendar.setTime(startDate);
-
-                // Tạo danh sách các ngày
-                while (!calendar.getTime().after(endDate)) {
-                    dateList.add(sdf.format(calendar.getTime()));
-                    calendar.add(Calendar.DAY_OF_YEAR, 1);
-                }
-
-                // Hiển thị dialog với danh sách ngày
-                AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                builder.setTitle("Chọn ngày");
-                builder.setItems(dateList.toArray(new String[0]), (dialog, which) -> {
-                    String selectedDate = dateList.get(which);
-                    selectedDateTextView.setText(selectedDate);
-                });
-                builder.setNegativeButton("Hủy", (dialog, which) -> dialog.dismiss());
-                builder.show();
-            }
-        });
-
         binding.backButton.setOnClickListener(v -> finish());
+        binding.saveButton.setOnClickListener(v -> {
+            String noteText = binding.taskNoteText.getText().toString();
+            log.setNote(noteText);
+            saveEditTask(item, log);
+        });
     }
 
-    private void observeData(){
-        taskDetailViewModel.task.observe(this, taskItem -> {
-            this.item = taskItem;
-            if (taskItem != null) {
-                binding.titleTextView.setText(taskItem.getName());
-                binding.startDateTextView.setText(taskItem.getStartDate());
-                binding.endDateTextView.setText(taskItem.getEndDate());
-                binding.descriptionTextView.setText(taskItem.getDescription());
+    private void saveEditTask(TaskItem item, TaskLog log){
+        taskDetailViewModel.saveEditTask(item, log, new TaskRepository.SaveTaskCallback() {
+            @Override
+            public void onSuccess(String successMessage) {
+                runOnUiThread(() -> {
+                    Toast.makeText(TaskDetailActivity.this, successMessage, Toast.LENGTH_SHORT).show();
+                });
+            }
+
+            @Override
+            public void onError(String errorMessage) {
+                runOnUiThread(() ->
+                        Toast.makeText(TaskDetailActivity.this, errorMessage, Toast.LENGTH_SHORT).show()
+                );
             }
         });
     }

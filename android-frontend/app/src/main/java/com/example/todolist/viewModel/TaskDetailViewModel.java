@@ -28,11 +28,15 @@ public class TaskDetailViewModel extends ViewModel {
 
     private ExecutorService executor = Executors.newSingleThreadExecutor();
 
-    public void loadData(int taskId){
+    public void loadData(int taskId, String day){
         executor.execute(() -> {
             _task.postValue(taskRepository.getTaskById(taskId));
+            _taskLog.postValue(taskLogRepository.getTaskLogByTaskId(taskId, day));
         });
 //        _tag.setValue(tagRepository.getTagByTaskId(taskId));
-//        _taskLog.setValue(taskLogRepository.getTaskLogByTaskId(taskId));
+    }
+
+    public void saveEditTask(TaskItem item, TaskLog log, TaskRepository.SaveTaskCallback callback){
+        taskRepository.saveEditTask(item, log, callback);
     }
 }

@@ -110,4 +110,42 @@ public class TaskLogRepository {
             }
         });
     }
+
+    public TaskLog getTaskLogByTaskId(int taskId, String day){
+        String url = baseURL + "/taskLog/getByTaskIdDate/" + taskId + "/" + day;
+
+        TaskLog result = new TaskLog();
+        Request request = new Request.Builder()
+                .url(url)
+                .build();
+        OkHttpClient client = new OkHttpClient();
+
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(@NonNull Call call, @NonNull IOException e) {
+                e.printStackTrace();
+                Log.e("checkTask", "Failed to send request");
+            }
+
+            @Override
+            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+                if (response.isSuccessful()) {
+                    String responseStr = response.body().string();
+                    try {
+                        JSONObject resJSON = new JSONObject(responseStr);
+                        result.setId(resJSON.getInt("id"));
+                        result.setTaskId(resJSON.getInt("task_id"));
+                        result.setNote(resJSON.getString("note"));
+                        result.setStatus(resJSON.getBoolean("status"));
+                        result.setCompletedAt(resJSON.getString("date"));
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                } else {
+                    Log.e("checkTask", "Request failed: " + response.code());
+                }
+            }
+        });
+        return result;
+    }
 }
