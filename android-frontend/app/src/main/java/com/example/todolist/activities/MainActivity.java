@@ -37,7 +37,6 @@ public class MainActivity extends AppCompatActivity {
 
     private ActivityMainBinding binding;
     private SharedPreferences preferences ;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -45,7 +44,6 @@ public class MainActivity extends AppCompatActivity {
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         preferences = getSharedPreferences("MyAppPrefs", MODE_PRIVATE);
-
         int userId = preferences.getInt("user_id", 0);
 
         HomeFragment homeFragment = new HomeFragment();

@@ -26,6 +26,7 @@ import okhttp3.Response;
 
 public class SignupActivity extends AppCompatActivity {
     private ActivitySignupBinding binding;
+    private final String image_avatar = "https://as1.ftcdn.net/v2/jpg/12/19/99/12/1000_F_1219991294_jxrVosZzEULp0NZSp6DDs5W3es5gcP16.jpg";
 
     @Override
     protected void onCreate(Bundle savedInstanceState){
@@ -45,10 +46,11 @@ public class SignupActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 String username = binding.usernameEditText.getText().toString().trim();
+                String email = binding.emailEditText.getText().toString().trim();
                 String password = binding.passwordEditText.getText().toString().trim();
 
                 if(!username.isEmpty() || !password.isEmpty()){
-                    signupUser(username, password);
+                    signupUser(username, password, email, image_avatar);
                 } else {
                     Toast.makeText(SignupActivity.this, "Vui lòng nhập đầy đủ thông tin", Toast.LENGTH_SHORT).show();
                 }
@@ -56,7 +58,7 @@ public class SignupActivity extends AppCompatActivity {
         });
     }
 
-    public void signupUser(String username, String password){
+    public void signupUser(String username, String password, String email, String image_avatar){
         MediaType MEDIA_TYPE = MediaType.parse("application/json");
         String url = "http://192.168.10.105:5000/user/register";
 
@@ -64,6 +66,8 @@ public class SignupActivity extends AppCompatActivity {
         try{
             json.put("username", username);
             json.put("password", password);
+            json.put("email", email);
+            json.put("avatar", image_avatar);
         } catch (Exception e){
             e.printStackTrace();
         }

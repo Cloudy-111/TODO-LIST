@@ -1,6 +1,7 @@
 package com.example.todolist.activities;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -41,10 +42,11 @@ public class AddTaskActivity extends AppCompatActivity {
     private static final OkHttpClient client = new OkHttpClient();
     private ActivityAddTaskBinding binding;
     private ImageView chooseIcon;
-    private TextView startDateTextView, endDateTextView, remindHourTextView;
+    private TextView startDateTextView, endDateTextView, remindHourTextView, buttonChooseTag;
     private EditText editDescriptionText, editTitleText;
     private Button saveButton;
     private AddTaskViewModel addTaskViewModel;
+    private SharedPreferences preferences;
 
     private int[] iconOptions = {
             R.drawable.ic_laundry,
@@ -74,6 +76,9 @@ public class AddTaskActivity extends AppCompatActivity {
         binding = ActivityAddTaskBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
+        preferences = getSharedPreferences("MyAppPrefs", MODE_PRIVATE);
+        int userId = preferences.getInt("user_id", 0);
+
 //        chooseIcon = findViewById(R.id.choose_icon);
         startDateTextView = binding.startDateTextView;
         endDateTextView = binding.endDateTextView;
@@ -81,6 +86,7 @@ public class AddTaskActivity extends AppCompatActivity {
         editTitleText = binding.titleEditTextView;
         saveButton = binding.saveButton;
         remindHourTextView = binding.remindHour;
+//        buttonChooseTag = binding.buttonChooseTag;
 
         addTaskViewModel = new ViewModelProvider(this).get(AddTaskViewModel.class);
 
@@ -99,27 +105,27 @@ public class AddTaskActivity extends AppCompatActivity {
         saveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                TaskItem newItem = new TaskItem(1, editTitleText.getText().toString(),
+                TaskItem newItem = new TaskItem(userId, editTitleText.getText().toString(),
                         editDescriptionText.getText().toString(),
                         remindHourTextView.getText().toString(),
-                        "",
-                        1,
+                        "https://as1.ftcdn.net/v2/jpg/12/19/99/12/1000_F_1219991294_jxrVosZzEULp0NZSp6DDs5W3es5gcP16.jpg",
+                        2,
                         startDateTextView.getText().toString(),
                         endDateTextView.getText().toString());
                 saveNewTask(newItem);
             }
         });
-
+//        buttonChooseTag.setOnClickListener(v -> popUpChooseTag());
         binding.backButton.setOnClickListener(v -> finish());
     }
 
     private void saveNewTask(TaskItem item){
         addTaskViewModel.saveNewTask(item, new TaskRepository.AddTaskCallback() {
             @Override
-            public void onSuccess(int userId) {
+            public void onSuccess(String successMessage) {
                 runOnUiThread(() -> {
+                    Toast.makeText(AddTaskActivity.this, successMessage, Toast.LENGTH_SHORT).show();
                     Intent intent = new Intent(AddTaskActivity.this, MainActivity.class);
-                    intent.putExtra("user_id", userId);
                     startActivity(intent);
                     finish();
                 });
@@ -133,4 +139,30 @@ public class AddTaskActivity extends AppCompatActivity {
             }
         });
     }
+
+//    private void popUpChooseTag(){
+//        LayoutInflater inflater = (LayoutInflater) AddTaskActivity.this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+//        @SuppressLint("ResourceType") View layout = inflater.inflate(R.id.popup_choose_a_tag, null);
+//        float density = AddTaskActivity.this.getResources().getDisplayMetrics().density;
+//        final PopupWindow pw = getPopupWindow(layout, (int) density);
+//        // display the pop-up in the center
+//        pw.showAtLocation(layout, Gravity.CENTER, 0, 0);
+//    }
+//
+//    @NonNull
+//    private static PopupWindow getPopupWindow(View layout, int density) {
+//        final PopupWindow pw = new PopupWindow(layout, density * 240, density * 285, true);
+//        pw.setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
+//        pw.setTouchInterceptor(new View.OnTouchListener() {
+//            public boolean onTouch(View v, MotionEvent event) {
+//                if(event.getAction() == MotionEvent.ACTION_OUTSIDE) {
+//                    pw.dismiss();
+//                    return true;
+//                }
+//                return false;
+//            }
+//        });
+//        pw.setOutsideTouchable(true);
+//        return pw;
+//    }
 }

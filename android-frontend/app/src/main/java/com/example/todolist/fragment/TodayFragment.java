@@ -79,8 +79,10 @@ public class TodayFragment extends Fragment implements CalendarAdapter.OnItemLis
     private void setupRecyclerView(){
         taskAdapter = new TaskAdapter(new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), getContext(),  (task, isChecked) -> {
             List<TaskLog> currentLogs = new ArrayList<>(taskLogsToday);
+            String today = DateTimeUtils.getTodayDate();
             if (isChecked) {
-                currentLogs.add(new TaskLog(currentLogs.size(), task.getId(), DateTimeUtils.getTodayDate(), ""));
+                TaskLog newLog = new TaskLog(currentLogs.size(), task.getId(), today, "", true);
+                currentLogs.add(newLog);
             } else {
                 Iterator<TaskLog> it = currentLogs.iterator();
                 while (it.hasNext()) {
@@ -92,6 +94,7 @@ public class TodayFragment extends Fragment implements CalendarAdapter.OnItemLis
                 }
             }
             viewModel.updateLogs(currentLogs);
+            viewModel.checkTask(task.getId(), today);
         }, (task) -> {
             Intent intent = new Intent(getContext(), TaskDetailActivity.class);
             Bundle bundle = new Bundle();
@@ -104,15 +107,15 @@ public class TodayFragment extends Fragment implements CalendarAdapter.OnItemLis
     }
 
     private void observeData(){
-        viewModel.tasks.observe(getViewLifecycleOwner(), taskItems -> {
+        viewModel.taskList.observe(getViewLifecycleOwner(), taskItems -> {
             taskAdapter.updateData(taskItems);
         });
 
-        viewModel.tags.observe(getViewLifecycleOwner(), tags -> {
+        viewModel.tagList.observe(getViewLifecycleOwner(), tags -> {
             taskAdapter.updateTags(tags);
         });
 
-        viewModel.logs.observe(getViewLifecycleOwner(), logs -> {
+        viewModel.taskLogList.observe(getViewLifecycleOwner(), logs -> {
             taskLogsToday = new ArrayList<>(logs);
             taskAdapter.updateLogs(logs);
         });

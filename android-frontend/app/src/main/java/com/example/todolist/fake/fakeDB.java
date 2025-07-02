@@ -37,7 +37,7 @@ public class fakeDB {
 
     public static List<TaskLog> getAllTaskLog(){
         List<TaskLog> taskLogsToday = new ArrayList<>();
-        taskLogsToday.add(new TaskLog(1, 3, "2025-06-30", ""));
+//        taskLogsToday.add(new TaskLog(1, 3, "2025-06-30", ""));
         return taskLogsToday;
     }
 
