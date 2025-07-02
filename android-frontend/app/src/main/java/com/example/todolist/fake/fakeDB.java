@@ -9,15 +9,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class fakeDB {
-    public static List<Tag> getAllTag(){
-        List<Tag> tagList = new ArrayList<>();
-        tagList.add(new Tag(1, "#F96060", "Work"));
-        tagList.add(new Tag(2, "#6074F9", "Habit"));
-        tagList.add(new Tag(3, "#313131", "Market"));
-        tagList.add(new Tag(4, "#03DAC5", "Most Important"));
-        tagList.add(new Tag(5, "#E0BBE4", "Oh Wow!"));
-        return tagList;
-    }
+//    public static List<Tag> getAllTag(){
+//        List<Tag> tagList = new ArrayList<>();
+//        tagList.add(new Tag(1, "#F96060", "Work"));
+//        tagList.add(new Tag(2, "#6074F9", "Habit"));
+//        tagList.add(new Tag(3, "#313131", "Market"));
+//        tagList.add(new Tag(4, "#03DAC5", "Most Important"));
+//        tagList.add(new Tag(5, "#E0BBE4", "Oh Wow!"));
+//        return tagList;
+//    }
 
 //    public static List<TaskItem> getAllTask(){
 //        List<TaskItem> list = new ArrayList<>();

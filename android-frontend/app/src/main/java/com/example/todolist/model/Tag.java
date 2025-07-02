@@ -1,5 +1,7 @@
 package com.example.todolist.model;
 
+import androidx.annotation.NonNull;
+
 public class Tag {
     private int id;
     private String color;
@@ -12,10 +14,18 @@ public class Tag {
         this.color = color;
         this.name = name;
     }
-    public Tag(int id, String color, String name) {
-        this.id = id;
+    public Tag(int userId, String color, String name) {
+        this.userId = userId;
         this.color = color;
         this.name = name;
+    }
+
+    public int getUserId() {
+        return userId;
+    }
+
+    public void setUserId(int userId) {
+        this.userId = userId;
     }
 
     public int getId() {
@@ -40,5 +50,11 @@ public class Tag {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    @NonNull
+    @Override
+    public String toString() {
+        return this.name + " " + this.color;
     }
 }

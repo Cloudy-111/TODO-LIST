@@ -52,4 +52,5 @@ dependencies {
     implementation("com.github.bumptech.glide:glide:4.16.0")
     implementation("com.apachat:swipereveallayout-android:1.1.2")
     annotationProcessor("com.github.bumptech.glide:compiler:4.16.0")
+    implementation("com.github.QuadFlask:colorpicker:0.0.15")
 }

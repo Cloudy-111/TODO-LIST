@@ -60,7 +60,6 @@ public class TaskLogRepository {
                     result.add(item);
                 }
             }
-            Log.d("TaskLog", result.get(0).toString());
         } catch (IOException | JSONException e) {
             e.printStackTrace();
         }
