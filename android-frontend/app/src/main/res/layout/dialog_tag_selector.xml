@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:padding="24dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Tạo chủ đề mới"
+        android:textColor="@color/job_text_primary"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="16dp" />
+
+    <!-- Tên chủ đề -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Tên chủ đề:"
+        android:textColor="@color/job_text_primary"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="8dp" />
+
+    <EditText
+        android:id="@+id/edit_tag_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Nhập tên chủ đề"
+        android:textColor="@color/job_text_primary"
+        android:textSize="16sp"
+        android:layout_marginBottom="16dp" />
+
+    <!-- Màu chủ đề -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Màu chủ đề:"
+        android:textColor="@color/job_text_primary"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="8dp" />
+
+    <!-- Màu có sẵn -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recycler_tag_list"
+        android:layout_width="match_parent"
+        android:layout_height="150dp"
+        android:layout_marginBottom="16dp"
+        tools:listitem="@layout/item_tag"
+        />
+
+    <!-- Màu đã chọn và nút chọn màu khác -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="24dp">
+
+        <Button
+            android:id="@+id/btn_pick_custom_color"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minHeight="0dp"
+            android:padding="8dp"
+            android:text="Chọn màu khác"
+            android:textAllCaps="false"
+            android:textSize="12sp" />
+
+        <Space
+            android:layout_width="20dp"
+            android:layout_height="wrap_content"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Màu đã chọn:"
+            android:textColor="@color/job_text_primary"
+            android:textSize="14sp"
+            android:layout_marginEnd="8dp" />
+
+        <View
+            android:id="@+id/selected_color_preview"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:background="@drawable/bg_rounded_rec"
+            android:backgroundTint="#000000"
+            android:layout_marginEnd="16dp" />
+
+
+    </LinearLayout>
+
+    <!-- Buttons -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="end">
+
+        <Button
+            android:id="@+id/btn_cancel"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Hủy"
+            android:textAllCaps="false"
+            android:layout_marginEnd="8dp" />
+
+        <Button
+            android:id="@+id/btn_confirm"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/background_button_edit"
+            android:text="Xác nhận"
+            android:textAllCaps="false"
+            android:textColor="@color/white" />
+
+    </LinearLayout>
+
+</LinearLayout>

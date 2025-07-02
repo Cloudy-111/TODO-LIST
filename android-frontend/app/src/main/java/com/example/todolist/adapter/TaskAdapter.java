@@ -166,7 +166,7 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskViewHolder> {
         this.itemListener = onClick;
     }
 
-    public void updateData(List<TaskItem> listTaskItem){
+    public void     updateData(List<TaskItem> listTaskItem){
         this.taskList = listTaskItem != null ? listTaskItem : new ArrayList<>();
         notifyDataSetChanged();
     }

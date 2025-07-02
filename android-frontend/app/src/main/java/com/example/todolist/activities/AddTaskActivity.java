@@ -1,5 +1,11 @@
 package com.example.todolist.activities;
 
+
+import static java.security.AccessController.getContext;
+
+import android.content.res.ColorStateList;
+import android.graphics.Color;
+import android.view.LayoutInflater;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
@@ -9,18 +15,27 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.todolist.adapter.TagAdapter;
+import com.example.todolist.repository.TagRepository;
+import com.flask.colorpicker.ColorPickerView;
+import com.flask.colorpicker.builder.ColorPickerDialogBuilder;
 import com.example.todolist.R;
 import com.example.todolist.Utils.DateTimeUtils;
 import com.example.todolist.databinding.ActivityAddTaskBinding;
+import com.example.todolist.model.Tag;
 import com.example.todolist.model.TaskItem;
 import com.example.todolist.repository.TaskRepository;
 import com.example.todolist.viewModel.AddTaskViewModel;
@@ -28,7 +43,9 @@ import com.example.todolist.viewModel.AddTaskViewModel;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -42,33 +59,18 @@ public class AddTaskActivity extends AppCompatActivity {
     private static final OkHttpClient client = new OkHttpClient();
     private ActivityAddTaskBinding binding;
     private ImageView chooseIcon;
-    private TextView startDateTextView, endDateTextView, remindHourTextView, buttonChooseTag;
-    private EditText editDescriptionText, editTitleText;
-    private Button saveButton;
+    private TextView startDateTextView, endDateTextView, remindHourTextView, tagNameDisplay;
+    private EditText editDescriptionText, editTitleText, editTagName;
+    private Button saveButton, chooseColor, btnCancel, btnConfirm;
+    private View tagColorPreview;
+    private Tag selectedTag;
+    private Calendar startDateCalendar, endDateCalendar;
     private AddTaskViewModel addTaskViewModel;
     private SharedPreferences preferences;
-
-    private int[] iconOptions = {
-            R.drawable.ic_laundry,
-            R.drawable.ic_calendar,
-            R.drawable.ic_arrow_back_black_24dp
-    };
-
-    private String[] iconNames = {
-            "Giặt đồ", "Lịch", "Quay lại"
-    };
-
-    private static final int REQUEST_CODE_PERMISSION = 101;
-
-    private final ActivityResultLauncher<Intent> galleryLauncher =
-            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
-                if (result.getResultCode() == RESULT_OK && result.getData() != null) {
-                    Uri selectedImageUri = result.getData().getData();
-                    if (selectedImageUri != null) {
-                        chooseIcon.setImageURI(selectedImageUri);
-                    }
-                }
-            });
+    private List<Tag> tagList = new ArrayList<>();
+    private TagAdapter tagAdapter;
+    private int userId;
+    private int selectedColorValue = Color.parseColor("#000000");
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,24 +79,39 @@ public class AddTaskActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
 
         preferences = getSharedPreferences("MyAppPrefs", MODE_PRIVATE);
-        int userId = preferences.getInt("user_id", 0);
+        userId = preferences.getInt("user_id", 0);
 
-//        chooseIcon = findViewById(R.id.choose_icon);
         startDateTextView = binding.startDateTextView;
         endDateTextView = binding.endDateTextView;
         editDescriptionText = binding.descriptionEditTextView;
         editTitleText = binding.titleEditTextView;
         saveButton = binding.saveButton;
         remindHourTextView = binding.remindHour;
-//        buttonChooseTag = binding.buttonChooseTag;
 
         addTaskViewModel = new ViewModelProvider(this).get(AddTaskViewModel.class);
+        observeData();
 
-//        chooseIcon.setOnClickListener(v -> showIconDialog());
+        tagNameDisplay = findViewById(R.id.tag_name_display);
+        tagColorPreview = findViewById(R.id.tag_color_preview);
 
         startDateTextView.setOnClickListener(v -> DateTimeUtils.showDatePicker(startDateTextView));
         endDateTextView.setOnClickListener(v -> DateTimeUtils.showDatePicker(endDateTextView));
 
+        View tagContainer = findViewById(R.id.edit_tag_name);
+        if (tagContainer == null) {
+            tagContainer = findViewById(R.id.tag_name_display).getParent() instanceof View ?
+                    (View) findViewById(R.id.tag_name_display).getParent() : null;
+        }
+        if (tagContainer != null) {
+            tagContainer.setOnClickListener(v -> showTagSelectorDialog());
+        }
+
+        ImageView backButton = binding.backButton;
+        backButton.setOnClickListener(v -> {
+            Intent intent = new Intent(AddTaskActivity.this,MainActivity.class);
+            startActivity(intent);
+            finish();
+        });
 
         remindHourTextView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -102,21 +119,112 @@ public class AddTaskActivity extends AppCompatActivity {
                 DateTimeUtils.showTimePicker(remindHourTextView);
             }
         });
+
         saveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                TaskItem newItem = new TaskItem(userId, editTitleText.getText().toString(),
+                // Validate inputs
+                if (editTitleText.getText().toString().trim().isEmpty()) {
+                    Toast.makeText(AddTaskActivity.this, "Vui lòng nhập tiêu đề công việc", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                if (startDateTextView == null) {
+                    Toast.makeText(AddTaskActivity.this, "Vui lòng chọn ngày bắt đầu", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                if (endDateTextView == null) {
+                    Toast.makeText(AddTaskActivity.this, "Vui lòng chọn ngày kết thúc", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                if (selectedTag == null) {
+                    Toast.makeText(AddTaskActivity.this, "Vui lòng chọn chủ đề", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                TaskItem newItem = new TaskItem(userId,
+                        editTitleText.getText().toString(),
                         editDescriptionText.getText().toString(),
                         remindHourTextView.getText().toString(),
                         "https://as1.ftcdn.net/v2/jpg/12/19/99/12/1000_F_1219991294_jxrVosZzEULp0NZSp6DDs5W3es5gcP16.jpg",
-                        2,
+                        selectedTag.getId(),
                         startDateTextView.getText().toString(),
                         endDateTextView.getText().toString());
                 saveNewTask(newItem);
             }
         });
-//        buttonChooseTag.setOnClickListener(v -> popUpChooseTag());
-        binding.backButton.setOnClickListener(v -> finish());
+    }
+
+    private void showTagSelectorDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_tag_selector, null);
+        builder.setView(dialogView);
+
+        btnCancel = dialogView.findViewById(R.id.btn_cancel);
+        btnConfirm = dialogView.findViewById(R.id.btn_confirm);
+        tagColorPreview = dialogView.findViewById(R.id.selected_color_preview);
+        editTagName = dialogView.findViewById(R.id.edit_tag_name);
+
+        AlertDialog dialog = builder.create();
+
+        // Initialize dialog components
+        RecyclerView recyclerView = dialogView.findViewById(R.id.recycler_tag_list);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+
+        tagAdapter = new TagAdapter(tagList, tag -> {
+            selectedTag = tag;
+
+            tagNameDisplay.setText(tag.getName());
+            try {
+                int color = Color.parseColor(tag.getColor());
+                tagColorPreview.setBackgroundTintList(ColorStateList.valueOf(color));
+            } catch (Exception e) {
+                tagColorPreview.setBackgroundTintList(ColorStateList.valueOf(Color.GRAY));
+            }
+
+            dialog.dismiss();
+            Toast.makeText(this, "Đã chọn chủ đề: " + tag.getName(), Toast.LENGTH_SHORT).show();
+        });
+
+        recyclerView.setAdapter(tagAdapter);
+        addTaskViewModel.loadAllTagsByUserId(userId);
+
+        chooseColor = dialogView.findViewById(R.id.btn_pick_custom_color);
+        chooseColor.setOnClickListener(v -> pickCustomColor());
+
+        btnCancel.setOnClickListener(v -> dialog.dismiss());
+        btnConfirm.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String tagName = editTagName.getText().toString().trim();
+                if (tagName.isEmpty()) {
+                    Toast.makeText(getBaseContext(), "Vui lòng nhập tên chủ đề", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                String hexColor = String.format("#%06X", (0xFFFFFF & selectedColorValue));
+                selectedTag = new Tag(userId, hexColor, tagName);
+
+                tagNameDisplay.setText(tagName);
+                tagColorPreview.setBackgroundTintList(ColorStateList.valueOf(selectedColorValue));
+
+                saveNewTag(selectedTag);
+
+                dialog.dismiss();
+                Toast.makeText(getBaseContext(), "Đã chọn chủ đề: " + tagName, Toast.LENGTH_SHORT).show();
+
+            }
+        });
+        dialog.show();
+    }
+
+    private void observeData(){
+        addTaskViewModel.tagList.observe(this, tagList -> {
+            this.tagList = tagList;
+            tagAdapter.updateData(tagList);
+        });
     }
 
     private void saveNewTask(TaskItem item){
@@ -140,29 +248,46 @@ public class AddTaskActivity extends AppCompatActivity {
         });
     }
 
-//    private void popUpChooseTag(){
-//        LayoutInflater inflater = (LayoutInflater) AddTaskActivity.this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-//        @SuppressLint("ResourceType") View layout = inflater.inflate(R.id.popup_choose_a_tag, null);
-//        float density = AddTaskActivity.this.getResources().getDisplayMetrics().density;
-//        final PopupWindow pw = getPopupWindow(layout, (int) density);
-//        // display the pop-up in the center
-//        pw.showAtLocation(layout, Gravity.CENTER, 0, 0);
-//    }
-//
-//    @NonNull
-//    private static PopupWindow getPopupWindow(View layout, int density) {
-//        final PopupWindow pw = new PopupWindow(layout, density * 240, density * 285, true);
-//        pw.setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
-//        pw.setTouchInterceptor(new View.OnTouchListener() {
-//            public boolean onTouch(View v, MotionEvent event) {
-//                if(event.getAction() == MotionEvent.ACTION_OUTSIDE) {
-//                    pw.dismiss();
-//                    return true;
-//                }
-//                return false;
-//            }
-//        });
-//        pw.setOutsideTouchable(true);
-//        return pw;
-//    }
+    private void saveNewTag(Tag tag){
+        addTaskViewModel.saveNewTag(tag, new TagRepository.AddNewTagCallback() {
+            @Override
+            public void onSuccess(Tag newTag) {
+                selectedTag = newTag;
+                runOnUiThread(() -> {
+                    Toast.makeText(AddTaskActivity.this, "Add Tag Success", Toast.LENGTH_SHORT).show();
+                });
+            }
+
+            @Override
+            public void onError(String errorMessage) {
+                runOnUiThread(() ->
+                        Toast.makeText(AddTaskActivity.this, errorMessage, Toast.LENGTH_SHORT).show()
+                );
+            }
+        });
+    }
+
+    private void pickCustomColor(){
+        ColorPickerDialogBuilder
+                .with(this)
+                .setTitle("Pick a Color")
+                .initialColor(selectedColorValue)
+                .wheelType(ColorPickerView.WHEEL_TYPE.FLOWER)
+                .density(12)
+                .setOnColorSelectedListener(color -> {
+
+                })
+                .setPositiveButton("Chọn", (colorDialog, color, allColors) -> {
+                    selectedColorValue = color;
+                    if (tagColorPreview != null) {
+                        tagColorPreview.setBackgroundTintList(ColorStateList.valueOf(color));
+                    }
+                    Toast.makeText(this, "Đã chọn màu", Toast.LENGTH_SHORT).show();
+                })
+                .setNegativeButton("Hủy", (colorDialog, which) -> {
+                    // Do nothing
+                })
+                .build()
+                .show();
+    }
 }

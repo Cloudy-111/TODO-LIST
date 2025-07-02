@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -105,7 +104,7 @@
                 android:layout_width="230dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
-                android:hint="Chọn ngày bắt đầu"
+                android:text="Chọn ngày bắt đầu"
                 android:textColor="@color/job_text_primary"
                 android:textSize="18sp" />
 
@@ -138,7 +137,7 @@
                 android:layout_width="226dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
-                android:hint="Chọn ngày kết thúc"
+                android:text="Chọn ngày kết thúc"
                 android:textColor="@color/job_text_primary"
                 android:textSize="18sp" />
 
@@ -160,19 +159,39 @@
             <TextView
                 android:layout_width="110dp"
                 android:layout_height="wrap_content"
-                android:text="Chu de:"
+                android:text="Chủ đề:"
                 android:textColor="@color/job_text_primary"
                 android:textSize="16sp"
                 android:textStyle="bold" />
 
-            <Spinner
-                android:id="@+id/tag_sub"
+            <LinearLayout
                 android:layout_width="251dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
-                android:hint="Chon chu de"
-                android:textColor="@color/job_text_primary"
-                android:textSize="18sp" />
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:clickable="true"
+                android:focusable="true"
+                android:padding="8dp">
+
+                <View
+                    android:id="@+id/tag_color_preview"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:background="@drawable/bg_rounded_rec"
+                    android:backgroundTint="#F44336"
+                    android:layout_marginEnd="8dp" />
+
+                <TextView
+                    android:id="@+id/tag_name_display"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Chọn chủ đề"
+                    android:textColor="@color/job_text_primary"
+                    android:textSize="18sp" />
+
+            </LinearLayout>
 
         </LinearLayout>
 
