@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -16,9 +17,11 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.bumptech.glide.Glide;
 import com.example.todolist.R;
+import com.example.todolist.Utils.DateTimeUtils;
 import com.example.todolist.activities.LoginActivity;
 import com.example.todolist.databinding.FragmentHomeBinding;
 import com.example.todolist.databinding.FragmentProfileBinding;
+import com.example.todolist.model.StatisticalResult;
 import com.example.todolist.model.User;
 import com.example.todolist.viewModel.ProfileViewModel;
 
@@ -27,6 +30,8 @@ public class ProfileFragment extends Fragment {
     private SharedPreferences preferences;
     private ProfileViewModel profileViewModel;
     private User user;
+    private StatisticalResult stats;
+    private TextView totalText, completeText, remainingText;
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState){
@@ -42,9 +47,15 @@ public class ProfileFragment extends Fragment {
         int userId = preferences.getInt("user_id", 0);
         profileViewModel = new ViewModelProvider(this).get(ProfileViewModel.class);
 
-        observeData();
+        totalText = binding.totalTaskTextview;
+        completeText = binding.completedTaskTextview;
+        remainingText = binding.remainTaskTextview;
 
-        profileViewModel.loadData(userId);
+        observeData();
+        observeDataStatistic();
+
+        profileViewModel.loadData(userId, DateTimeUtils.getTodayDate());
+        profileViewModel.loadStatistics(userId, DateTimeUtils.getTodayDate());
         binding.logoutSection.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -76,6 +87,14 @@ public class ProfileFragment extends Fragment {
                         .error(R.drawable.ic_error)
                         .into(binding.profileAvatar);
             }
+        });
+    }
+
+    private void observeDataStatistic(){
+        profileViewModel.stats.observe(getViewLifecycleOwner(), stats -> {
+            totalText.setText(String.valueOf(stats.getTotal()));
+            completeText.setText(String.valueOf(stats.getComplete()));
+            remainingText.setText(String.valueOf(stats.getRemaining()));
         });
     }
 }
