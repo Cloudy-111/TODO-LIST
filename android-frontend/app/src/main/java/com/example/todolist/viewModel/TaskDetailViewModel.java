@@ -25,6 +25,7 @@ public class TaskDetailViewModel extends ViewModel {
     public LiveData<Tag> tag = _tag;
     private final MutableLiveData<TaskLog> _taskLog = new MutableLiveData<>();
     public LiveData<TaskLog> taskLog = _taskLog;
+
     private ExecutorService executor = Executors.newSingleThreadExecutor();
 
     public void loadData(int taskId){

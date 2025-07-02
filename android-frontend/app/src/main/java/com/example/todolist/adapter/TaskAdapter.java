@@ -102,7 +102,7 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskViewHolder> {
 
         boolean isChecked = false;
         for(TaskLog log : taskLogsToday){
-            if(log.getTaskId() == item.getId() && log.getCompletedAt().equals(DateTimeUtils.getTodayDate())){
+            if(log.getTaskId() == item.getId() && log.getCompletedAt().equals(DateTimeUtils.getTodayDate()) && log.getStatus()){
                 isChecked = true;
                 break;
             }

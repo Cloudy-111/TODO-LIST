@@ -7,12 +7,22 @@ public class TaskLog {
     private int taskId;
     private String completedAt;
     private String note;
+    private Boolean status;
 
-    public TaskLog(int id, int taskId, String completedAt, String note) {
+    public TaskLog(int id, int taskId, String completedAt, String note, boolean status) {
         this.id = id;
         this.taskId = taskId;
         this.completedAt = completedAt;
         this.note = note;
+        this.status = status;
+    }
+
+    public Boolean getStatus() {
+        return status;
+    }
+
+    public void setStatus(Boolean status) {
+        this.status = status;
     }
 
     public int getId() {

@@ -29,7 +29,7 @@ public class TaskRepository {
     private final String baseURL = "http://192.168.10.105:5000";
 
     public interface AddTaskCallback{
-        void onSuccess(int userId);
+        void onSuccess(String successMessage);
         void onError(String errorMessage);
     }
 
@@ -135,22 +135,29 @@ public class TaskRepository {
 
             @Override
             public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-                if (response.isSuccessful()) {
+                if (response.isSuccessful() && response.body() != null) {
                     try {
+                        // Đọc nội dung JSON string
                         String resStr = response.body().string();
+                        Log.d("HTTP_RESPONSE", "Raw response: " + resStr);
+
+                        // Parse JSON
                         JSONObject resJSON = new JSONObject(resStr);
+                        Log.d("JSON", resJSON.toString());
+
+                        // Xử lý dữ liệu
                         boolean success = resJSON.getBoolean("success");
                         if (success) {
-                            int userId = resJSON.getInt("user_id");
-                            callback.onSuccess(userId);
+                            callback.onSuccess("Add Success");
                         } else {
                             callback.onError(resJSON.getString("message"));
                         }
                     } catch (Exception e) {
-                        callback.onError("Lỗi xử lý phản hồi");
+                        e.printStackTrace();
+                        callback.onError("Lỗi xử lý phản hồi: " + e.getMessage());
                     }
                 } else {
-                    callback.onError("Lỗi từ máy chủ");
+                    callback.onError("Lỗi từ máy chủ: " + response.code());
                 }
             }
         });
