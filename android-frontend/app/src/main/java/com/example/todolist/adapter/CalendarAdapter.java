@@ -1,6 +1,7 @@
 package com.example.todolist.adapter;
 
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -48,10 +49,10 @@ public class CalendarAdapter extends RecyclerView.Adapter<CalendarViewHolder>{
             holder.daysOfMonth.setTextColor(Color.GRAY);
         }
         if (date.equals(selectedDate)) {
-            // highlight màu nền khác
-//            holder.itemView.setBackgroundResource(R.drawable.bg_selected_date);
+            holder.daysOfMonth.setTextSize(30);
+            holder.daysOfMonth.setTypeface(null, Typeface.BOLD);
         } else {
-//            holder.itemView.setBackgroundResource(0);
+            holder.itemView.setBackgroundResource(0);
         }
     }
 
