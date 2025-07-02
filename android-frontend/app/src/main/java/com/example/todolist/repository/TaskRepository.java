@@ -29,7 +29,7 @@ public class TaskRepository {
     private final String baseURL = "http://192.168.10.105:5000";
 
     public interface AddTaskCallback{
-        void onSuccess(String successMessage);
+        void onSuccess(String successMessage, TaskItem taskItem);
         void onError(String errorMessage);
     }
 
@@ -143,12 +143,10 @@ public class TaskRepository {
 
                         // Parse JSON
                         JSONObject resJSON = new JSONObject(resStr);
-                        Log.d("JSON", resJSON.toString());
-
-                        // Xử lý dữ liệu
                         boolean success = resJSON.getBoolean("success");
+                        String message = resJSON.getString("message");
                         if (success) {
-                            callback.onSuccess("Add Success");
+                            callback.onSuccess(message, item);
                         } else {
                             callback.onError(resJSON.getString("message"));
                         }

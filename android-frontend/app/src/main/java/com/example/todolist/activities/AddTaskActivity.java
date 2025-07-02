@@ -3,6 +3,10 @@ package com.example.todolist.activities;
 
 import static java.security.AccessController.getContext;
 
+import android.annotation.SuppressLint;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.view.LayoutInflater;
@@ -43,9 +47,12 @@ import com.example.todolist.viewModel.AddTaskViewModel;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -230,9 +237,9 @@ public class AddTaskActivity extends AppCompatActivity {
     private void saveNewTask(TaskItem item){
         addTaskViewModel.saveNewTask(item, new TaskRepository.AddTaskCallback() {
             @Override
-            public void onSuccess(String successMessage) {
+            public void onSuccess(String successMessage, TaskItem item) {
                 runOnUiThread(() -> {
-                    Toast.makeText(AddTaskActivity.this, successMessage, Toast.LENGTH_SHORT).show();
+                    scheduleAlarmsForTask(item);
                     Intent intent = new Intent(AddTaskActivity.this, MainActivity.class);
                     startActivity(intent);
                     finish();
@@ -289,5 +296,48 @@ public class AddTaskActivity extends AppCompatActivity {
                 })
                 .build()
                 .show();
+    }
+
+    private void scheduleAlarmsForTask(TaskItem task) {
+        try {
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+            Calendar startCal = Calendar.getInstance();
+            startCal.setTime(sdf.parse(task.getStartDate()));
+
+            Calendar endCal = Calendar.getInstance();
+            endCal.setTime(sdf.parse(task.getEndDate()));
+
+            String[] timeParts = task.getDue_time().split(":");
+            int hour = Integer.parseInt(timeParts[0]);
+            int minute = Integer.parseInt(timeParts[1]);
+
+            Calendar alarmCal = (Calendar) startCal.clone();
+            alarmCal.set(Calendar.HOUR_OF_DAY, hour);
+            alarmCal.set(Calendar.MINUTE, minute);
+            alarmCal.set(Calendar.SECOND, 0);
+
+            while (!alarmCal.after(endCal)) {
+                setExactAlarm(alarmCal.getTimeInMillis(), task.getName());
+                alarmCal.add(Calendar.DAY_OF_MONTH, 1);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            Toast.makeText(this, "Lỗi đặt lịch: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @SuppressLint("ScheduleExactAlarm")
+    private void setExactAlarm(long timeInMillis, String taskTitle) {
+        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+        Intent intent = new Intent(this, ReminderReceiver.class);
+        intent.putExtra("TASK_TITLE", taskTitle);
+
+        int requestCode = (int) (timeInMillis / 1000); // unique
+        PendingIntent pi = PendingIntent.getBroadcast(this, requestCode, intent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+
+        alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, timeInMillis, pi);
+
+        Log.d("ALARM", "Đã đặt alarm cho: " + new Date(timeInMillis).toString());
     }
 }
