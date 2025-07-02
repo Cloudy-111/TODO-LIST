@@ -9,6 +9,8 @@ public class TaskLog {
     private String note;
     private Boolean status;
 
+    public TaskLog(){}
+
     public TaskLog(int id, int taskId, String completedAt, String note, boolean status) {
         this.id = id;
         this.taskId = taskId;
